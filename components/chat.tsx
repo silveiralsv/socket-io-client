@@ -13,7 +13,6 @@ type ChatProps = {
   token: string;
 };
 export default function Chat(props: ChatProps) {
-  console.log("@@@@@  -> props:", props);
   const [messages, setMessages] = useState<Message[]>([]);
 
   const socket = io("http://localhost:3001", {
@@ -37,7 +36,6 @@ export default function Chat(props: ChatProps) {
     });
 
     socket.on("message", (message: string, username: string) => {
-      console.log("@@@@@  -> message:", message);
       setMessages((prevMessages) => [
         ...prevMessages,
         { text: message, timestamp: new Date(), user: username },
@@ -45,6 +43,7 @@ export default function Chat(props: ChatProps) {
     });
 
     return () => {
+      console.log("disconnecting");
       socket.disconnect();
     };
   }, []);
