@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { io, Socket } from "socket.io-client";
 
 type Message = {
@@ -14,14 +14,18 @@ type ChatProps = {
 };
 export default function Chat(props: ChatProps) {
   const [messages, setMessages] = useState<Message[]>([]);
-
-  const socket = io("http://localhost:3001", {
-    auth: {
-      token: props.token,
-    },
-  });
+  const socketRef = useRef<Socket | null>(null);
+  const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
+    // TODO send to env
+    const socket = io("http://localhost:3001", {
+      auth: {
+        token: props.token,
+      },
+    });
+
+    socketRef.current = socket;
     socket.on("connect", () => {
       console.log("Connected to server");
     });
@@ -48,17 +52,21 @@ export default function Chat(props: ChatProps) {
     };
   }, []);
 
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
   const handleSendMessage = (event: any) => {
     event.preventDefault();
     const input = event.target[0];
-    console.log("socket", socket);
-    socket?.emit("message", input.value);
+    console.log("socket", socketRef);
+    socketRef.current?.emit("message", input.value);
     input.value = "";
   };
 
   return (
     <>
-      <div id="timeline" className="bg-slate-400 flex-grow">
+      <div id="timeline" className="bg-slate-400 flex-grow overflow-y-auto ">
         {messages.map((message, index) => (
           <div key={index} className="flex gap-4 p-4">
             <div className="text-white">{message.user}</div>
@@ -68,6 +76,7 @@ export default function Chat(props: ChatProps) {
             </div>
           </div>
         ))}
+        <div ref={messagesEndRef} />
       </div>
       <form className="flex gap-4" onSubmit={handleSendMessage}>
         <input
