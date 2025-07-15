@@ -3,6 +3,8 @@
 import { useEffect, useRef, useState } from "react";
 import { io, Socket } from "socket.io-client";
 
+const TOPIC = "test";
+
 type Message = {
   text: string;
   user: string;
@@ -28,6 +30,7 @@ export default function Chat(props: ChatProps) {
     socketRef.current = socket;
     socket.on("connect", () => {
       console.log("Connected to server");
+      socket.emit("join", TOPIC);
     });
 
     socket.on("disconnect", () => {
@@ -39,11 +42,20 @@ export default function Chat(props: ChatProps) {
       console.log(err.message); // not authorized
     });
 
-    socket.on("message", (message: string, username: string) => {
+    socket.on(TOPIC, (message: any) => {
+      console.log("message received", message);
       setMessages((prevMessages) => [
         ...prevMessages,
-        { text: message, timestamp: new Date(), user: username },
+        {
+          text: message.text,
+          timestamp: new Date(message.timestamp),
+          user: message.user,
+        },
       ]);
+    });
+
+    socket.on("publish", (topic: string, message: string) => {
+      console.log("publish", topic, message);
     });
 
     return () => {
@@ -59,8 +71,7 @@ export default function Chat(props: ChatProps) {
   const handleSendMessage = (event: any) => {
     event.preventDefault();
     const input = event.target[0];
-    console.log("socket", socketRef);
-    socketRef.current?.emit("message", input.value);
+    socketRef.current?.emit("publish", TOPIC, input.value);
     input.value = "";
   };
 
