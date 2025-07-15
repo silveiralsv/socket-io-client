@@ -1,21 +1,16 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useMessage } from "@/hooks/use-message";
+import { useEffect, useRef } from "react";
 import { io, Socket } from "socket.io-client";
 
 const TOPIC = "test";
-
-type Message = {
-  text: string;
-  user: string;
-  timestamp: Date;
-};
 
 type ChatProps = {
   token: string;
 };
 export default function Chat(props: ChatProps) {
-  const [messages, setMessages] = useState<Message[]>([]);
+  const { messages, setMessages } = useMessage();
   const socketRef = useRef<Socket | null>(null);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
 

@@ -1,6 +1,7 @@
 "use client";
 import { useAxios } from "@/hooks/use-axios";
 import React, { createContext, useContext, useState, ReactNode } from "react";
+import { useRouter } from "next/navigation";
 
 type AuthContextType = {
   user: { id: string; name: string } | null;
@@ -12,6 +13,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<{ id: string; name: string } | null>(null);
+  const router = useRouter();
   const axios = useAxios();
 
   const login = async (email: string, password: string) => {
@@ -20,7 +22,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       password,
     });
 
-    window.location.href = "/chat";
+    router.push("/chat");
   };
 
   const logout = () => {
